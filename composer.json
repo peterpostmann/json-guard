@@ -1,5 +1,5 @@
 {
-    "name": "league/json-guard",
+    "name": "peterpostmann/json-guard",
     "type": "library",
     "description": "A validator for JSON using json-schema.",
     "keywords": [
