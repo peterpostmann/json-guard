@@ -111,11 +111,11 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
         );
         $httpsLoader = new ChainedLoader(
             $arrayLoader,
-            new CurlWebLoader('https://')
+            new CurlWebLoader()
         );
         $httpLoader = new ChainedLoader(
             $arrayLoader,
-            new CurlWebLoader('http://')
+            new CurlWebLoader()
         );
         $refResolver  = Dereferencer::draft4();
         $refResolver->getLoaderManager()->registerLoader('http', $httpLoader);
