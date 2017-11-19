@@ -71,7 +71,7 @@ final class Validator
     private $currentParameter;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $ignoreUnknownConstraints = true;
 
@@ -96,6 +96,16 @@ final class Validator
         $this->data    = $data;
         $this->schema  = $schema;
         $this->ruleSet = $ruleSet ?: new DraftFour();
+        $this->ignoreUnknownConstraints = $ignoreUnknownConstraints;
+    }
+
+    /**
+     * Define if unknown constraints shall be ignored
+     *
+     * @param boolean
+     */
+    public function setIgnoreUnknownConstraints($ignoreUnknownConstraints)
+    {
         $this->ignoreUnknownConstraints = $ignoreUnknownConstraints;
     }
 

@@ -27,9 +27,11 @@ final class Format implements ConstraintInterface
     const HOST_NAME_PATTERN = '/^[_a-z]+\.([_a-z]+\.?)+$/i';
 
     /**
+     * @internal
+     *
      * @var string[]
      */
-    private $knownformats = ['date-time', 'uri', 'email', 'ipv4', 'ipv6','hostname'];
+    const KNOWN_FORMATS = ['date-time', 'uri', 'email', 'ipv4', 'ipv6','hostname'];
 
     /**
      * @var \League\JsonGuard\Constraint\DraftFour\Format\FormatExtensionInterface[]
@@ -37,16 +39,17 @@ final class Format implements ConstraintInterface
     private $extensions = [];
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $ignoreUnknownFormats = true;
 
     /**
      * Any custom format extensions to use, indexed by the format name.
      *
-     * @param array \League\JsonGuard\Constraint\DraftFour\Format\FormatExtensionInterface[]
+     * @param array \League\JsonGuard\Constraint\DraftFour\Format\FormatExtensionInterface[] $extensions
+     * @param bool                                                                           $ignoreUnknownFormats
      */
-    public function __construct(array $extensions = [], bool $ignoreUnknownFormats = true)
+    public function __construct(array $extensions = [], $ignoreUnknownFormats = true)
     {
         foreach ($extensions as $format => $extension) {
             $this->addExtension($format, $extension);
@@ -69,10 +72,10 @@ final class Format implements ConstraintInterface
     /**
      * Define if unknown formats shall be ignored
      *
-     * @param bool
+     * @param boolean
      */
-    public function setIgnoreUnknownFormats(bool $ignoreUnknownFormats)
-    { 
+    public function setIgnoreUnknownFormats($ignoreUnknownFormats)
+    {
         $this->ignoreUnknownFormats = $ignoreUnknownFormats;
     }
 
@@ -130,8 +133,12 @@ final class Format implements ConstraintInterface
                 );
             default:
                 if (!$this->ignoreUnknownFormats) {
-                    $allowedParameter = array_merge($this->knownformats, array_keys($this->extensions));
-                    throw InvalidSchemaException::invalidParameter($parameter, $allowedParameter, self::KEYWORD, $validator->getSchemaPath());
+                    throw InvalidSchemaException::invalidParameter(
+                        $parameter,
+                        array_merge(self::KNOWN_FORMATS, array_keys($this->extensions)),
+                        self::KEYWORD,
+                        $validator->getSchemaPath()
+                    );
                 }
         }
     }
@@ -142,7 +149,6 @@ final class Format implements ConstraintInterface
      * @param \League\JsonGuard\Validator $validator
      *
      * @return \League\JsonGuard\ValidationError|null
-     *
      */
     private static function validateRegex($value, $pattern, Validator $validator)
     {
@@ -160,7 +166,6 @@ final class Format implements ConstraintInterface
      * @param \League\JsonGuard\Validator $validator
      *
      * @return \League\JsonGuard\ValidationError|null
-     *
      */
     private static function validateFilter($value, $filter, $options, Validator $validator)
     {

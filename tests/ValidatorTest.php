@@ -13,10 +13,11 @@ use League\JsonReference\Dereferencer;
 use League\JsonReference\Loader\ArrayLoader;
 use League\JsonReference\Loader\ChainedLoader;
 use League\JsonReference\Loader\CurlWebLoader;
+use PHPUnit\Framework\TestCase;
 use function League\JsonGuard\error;
 use League\JsonGuard\Constraint\DraftFour\NullValidator;
 
-class ValidatorTest extends \PHPUnit_Framework_TestCase
+class ValidatorTest extends TestCase
 {
     const TEST_SUITE_PATH = __DIR__ . '/../vendor/json-schema/JSON-Schema-Test-Suite/tests';
 
@@ -101,35 +102,55 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function custom_keyword_test($ruleSet, $ignoreUnknownKeyword)
+    public function custom_keyword_test()
     {
         $data        = (object) ["id" => 1, "name" => "test", "price" => 5];
-        $schema      = $this->loadTest(__DIR__ . '/fixtures/custom.json');
+        $schema      = $this->loadTest(__DIR__ . '/fixtures/custom_constraint.json');
         $refResolver = self::createDereferencer();
         $schema      = $refResolver->dereference($schema);
-        $validator   = new Validator($data, $schema, $ruleSet, $ignoreUnknownKeyword);
 
-        $this->assertTrue($validator->passes());
-    }
-
-    public function test_it_passes_with_unknown_constraints_per_default()
-    {
-        $this->custom_keyword_test(null, true);
+        return [[$data, $schema]];
     }
 
     /**
-     * @expectedException League\JsonGuard\Exception\ConstraintNotFoundException
+     * @dataProvider custom_keyword_test
      */
-    public function test_it_fails_if_unknown_constraints_are_not_ignored()
+    public function test_it_passes_with_unknown_constraints_per_default($data, $schema)
     {
-        $this->custom_keyword_test(null, false);
+        $validator = new Validator($data, $schema);   
+        $this->assertTrue($validator->passes());
     }
 
-    public function test_it_passes_with_unknown_constraints_if_not_ignored_but_registered()
+    /**
+     * @dataProvider custom_keyword_test
+     * @expectedException League\JsonGuard\Exception\ConstraintNotFoundException
+     */
+    public function test_it_fails_if_unknown_constraints_are_not_ignored_setter($data, $schema)
+    {
+        $validator = new Validator($data, $schema);
+        $validator->setIgnoreUnknownConstraints(false);        
+        $this->assertTrue($validator->passes());
+    }
+
+    /**
+     * @dataProvider custom_keyword_test
+     * @expectedException League\JsonGuard\Exception\ConstraintNotFoundException
+     */
+    public function test_it_fails_if_unknown_constraints_are_not_ignored_constructor($data, $schema)
+    {
+        $validator = new Validator($data, $schema, null, false);
+        $this->assertTrue($validator->passes());
+    }
+
+    /**
+     * @dataProvider custom_keyword_test
+     */
+    public function test_it_passes_with_unknown_constraints_if_not_ignored_but_registered($data, $schema)
     {
         $ruleSet = new DraftFour();
-        $ruleSet->set('x-custom', NullValidator::class);
-        $this->custom_keyword_test($ruleSet, false);
+        $ruleSet->set('x-custom', NullValidator::class);       
+        $validator = new Validator($data, $schema, $ruleSet, false);
+        $this->assertTrue($validator->passes());
     }
 
     /**

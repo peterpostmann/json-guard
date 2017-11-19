@@ -5,25 +5,12 @@ namespace League\JsonGuard\Test\Constraint;
 use League\JsonGuard\Constraint\DraftFour\Format;
 use League\JsonGuard\ValidationError;
 use League\JsonGuard\Validator;
+use PHPUnit\Framework\TestCase;
 use League\JsonGuard\Constraint\DraftFour\Format\FormatExtensionInterface;
 use function League\JsonGuard\error;
 use League\JsonGuard\Exception\InvalidSchemaException;
 
-class FormatUuid implements FormatExtensionInterface
-{
-    public function validate($value, Validator $validator)
-    {
-        $pattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
-        
-        if (!is_string($value) || preg_match($pattern, $value) === 1) {
-            return null;
-        }
-
-        return error('The value {data} must match the format {parameter}.', $validator);
-    }
-}
-
-class FormatTest extends \PHPUnit_Framework_TestCase
+class FormatTest extends TestCase
 {
     public function invalidFormatValues()
     {
@@ -87,7 +74,7 @@ class FormatTest extends \PHPUnit_Framework_TestCase
         $result = (new Format())->validate($value, 'date-time', new Validator([], new \stdClass()));
         $this->assertNull($result);
     }
-    
+
     public function validUuidValues()
     {
         return [
@@ -97,7 +84,7 @@ class FormatTest extends \PHPUnit_Framework_TestCase
             ['acd9d304-3432-59d2-a14f-701c96fe0c10']
         ];
     }
-    
+
     /**
      * @dataProvider validUuidValues
      */
@@ -106,7 +93,7 @@ class FormatTest extends \PHPUnit_Framework_TestCase
         $result = (new Format())->validate($value, 'uuid', new Validator([], new \stdClass()));
         $this->assertNull($result);
     }
-    
+
     /**
      * @dataProvider validUuidValues
      */
@@ -117,7 +104,7 @@ class FormatTest extends \PHPUnit_Framework_TestCase
         $result = $format->validate($value, 'uuid', new Validator([], new \stdClass()));
         $this->assertNull($result);
     }
-    
+
     /**
      * @dataProvider validUuidValues
      */
@@ -128,7 +115,7 @@ class FormatTest extends \PHPUnit_Framework_TestCase
         $result = $format->validate($value, 'uuid', new Validator([], new \stdClass()));
         $this->assertInstanceOf(ValidationError::class, $result);
     }
-    
+
     /**
      * @dataProvider validUuidValues
      */
@@ -140,7 +127,7 @@ class FormatTest extends \PHPUnit_Framework_TestCase
         $result = $format->validate($value, 'uuid', new Validator([], new \stdClass()));
         $this->assertInstanceOf(ValidationError::class, $result);
     }
-    
+
     /**
      * @dataProvider validUuidValues
      */
@@ -149,5 +136,19 @@ class FormatTest extends \PHPUnit_Framework_TestCase
         $format = new Format(['uuid' => new FormatUuid()], false);
         $result = $format->validate($value, 'uuid', new Validator([], new \stdClass()));
         $this->assertNull($result);
+    }
+}
+
+class FormatUuid implements FormatExtensionInterface
+{
+    public function validate($value, Validator $validator)
+    {
+        $pattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
+
+        if (!is_string($value) || preg_match($pattern, $value) === 1) {
+            return null;
+        }
+
+        return error('The value {data} must match the format {parameter}.', $validator);
     }
 }
